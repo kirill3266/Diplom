@@ -8,6 +8,8 @@ find_library(fftw fftw3 REQUIRED)
 
 find_library(hackrf hackrf REQUIRED)
 
+include_directories(include src res)
+
 add_executable(Diplom main.cpp)
 
 target_link_libraries(Diplom ${fftw} ${hackrf})
