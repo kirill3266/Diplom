@@ -47,7 +47,6 @@ void flush_callback(void *, int) {
         g_cv.notify_all();
 }
 
-// TODO add starting at 0ms
 int main() {
 //        std::thread tr1(&RBUData::startCycle, &g_data);
 //        std::tuple<int, int> data;
@@ -205,7 +204,13 @@ int main() {
                 return EXIT_FAILURE;
         }
         std::thread th1(&RBUData::startCycle, &g_data);
-        std::chrono::time_point<std::chrono::high_resolution_clock> tp1 = std::chrono::high_resolution_clock::now();
+        std::chrono::time_point<std::chrono::high_resolution_clock> tp = std::chrono::high_resolution_clock::now();
+        while ((std::chrono::duration_cast<std::chrono::microseconds>(tp.time_since_epoch()) % 60000000) !=
+               // Waiting for minute start(microseconds accuracy)
+               std::chrono::microseconds(0)) {
+                tp = std::chrono::high_resolution_clock::now();
+                std::this_thread::sleep_for(std::chrono::nanoseconds(500));
+        }
         result = hackrf_start_tx(device, transfer_callback, nullptr);
         if (result) {
                 std::cerr << "hackrf_start_tx() failed: "
@@ -216,7 +221,7 @@ int main() {
         }
         std::unique_lock<std::mutex> mlock(g_mutex);
         g_cv.wait(mlock); //wait for transfer to complete
-        std::chrono::time_point<std::chrono::high_resolution_clock> tp2 = std::chrono::high_resolution_clock::now();
+        std::chrono::time_point<std::chrono::high_resolution_clock> tp1 = std::chrono::high_resolution_clock::now();
         result = hackrf_stop_tx(device);
         if (result) {
                 std::cerr << "hackrf_stop_tx failed: "
@@ -227,7 +232,7 @@ int main() {
         }
         g_data.setCycleStop();
         th1.join();
-        std::cout << "Elapsed time: " << std::dec << std::chrono::duration_cast<std::chrono::milliseconds>(tp2 - tp1)
+        std::cout << "Elapsed time: " << std::dec << std::chrono::duration_cast<std::chrono::milliseconds>(tp1 - tp)
                   << std::endl;
 
         std::cout << "Transferred " << g_xfered_samples << " bytes" << std::endl;
