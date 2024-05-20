@@ -49,18 +49,19 @@ void flush_callback(void *, int) {
 
 // TODO add starting at 0ms
 int main() {
-//        std::thread tr1(&RBUData::startCycle,&g_data);
-//        std::tuple<int,int> data;
-//        for (int i=0;i<SAMPLE_RATE*2;++i) {
+//        std::thread tr1(&RBUData::startCycle, &g_data);
+//        std::tuple<int, int> data;
+//        std::chrono::microseconds time = std::chrono::microseconds(0);
+//        for (int i = 0; i < SAMPLE_RATE * 2; ++i) {
 //                std::chrono::time_point<std::chrono::high_resolution_clock> tp1 = std::chrono::high_resolution_clock::now();
 //                data = g_data.getData();
 //                std::chrono::time_point<std::chrono::high_resolution_clock> tp2 = std::chrono::high_resolution_clock::now();
-//                std::cout << "Elapsed time: " << std::chrono::duration_cast<std::chrono::milliseconds>(tp2-tp1) << std::endl;
+//                time = std::max(std::chrono::duration_cast<std::chrono::microseconds>(tp2 - tp1),time);
 ////                std::cout << static_cast<int>(std::get<0>(data)) <<  " " << static_cast<int>(std::get<1>(data)) << std::endl;
 //        }
 //        g_data.setCycleStop();
 //        tr1.join();
-
+//        std::cout << "Max elapsed time: " << time << std::endl;
 
         int result;
         result = hackrf_init();
@@ -204,7 +205,7 @@ int main() {
                 return EXIT_FAILURE;
         }
         std::thread th1(&RBUData::startCycle, &g_data);
-
+        std::chrono::time_point<std::chrono::high_resolution_clock> tp1 = std::chrono::high_resolution_clock::now();
         result = hackrf_start_tx(device, transfer_callback, nullptr);
         if (result) {
                 std::cerr << "hackrf_start_tx() failed: "
@@ -215,6 +216,7 @@ int main() {
         }
         std::unique_lock<std::mutex> mlock(g_mutex);
         g_cv.wait(mlock); //wait for transfer to complete
+        std::chrono::time_point<std::chrono::high_resolution_clock> tp2 = std::chrono::high_resolution_clock::now();
         result = hackrf_stop_tx(device);
         if (result) {
                 std::cerr << "hackrf_stop_tx failed: "
@@ -225,6 +227,9 @@ int main() {
         }
         g_data.setCycleStop();
         th1.join();
+        std::cout << "Elapsed time: " << std::dec << std::chrono::duration_cast<std::chrono::milliseconds>(tp2 - tp1)
+                  << std::endl;
+
         std::cout << "Transferred " << g_xfered_samples << " bytes" << std::endl;
         hackrf_close(device);
         hackrf_device_list_free(device_list);
