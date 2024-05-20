@@ -24,8 +24,7 @@
 RBUData::RBUData(const int t_sample_rate, const int t_amplitude, const double t_modulation_index,
                  const int t_frequency_1,
                  const int t_frequency_2) : m_sample_rate(t_sample_rate), m_amplitude(t_amplitude),
-                                            m_modulation_index(t_modulation_index), m_frequency_1(t_frequency_1),
-                                            m_frequency_2(t_frequency_2) {
+                                            m_modulation_index(t_modulation_index) {
         m_subvector_1 = makePMSamples(t_frequency_1);
         m_subvector_2 = makePMSamples(t_frequency_2);
 }

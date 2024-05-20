@@ -26,10 +26,8 @@ RBUData g_data(SAMPLE_RATE, AMPLITUDE, M_IDX, SUBFREQUENCY_1, SUBFREQUENCY_2);
 std::condition_variable g_cv;
 std::mutex g_mutex;
 
-std::atomic<bool> ready = false;
-
 int transfer_callback(hackrf_transfer *t_transfer) {
-        int8_t *signed_buffer = reinterpret_cast<int8_t *>(t_transfer->buffer);
+        auto *signed_buffer = reinterpret_cast<int8_t *>(t_transfer->buffer);
         std::tuple<int8_t, int8_t> tuple;
         for (int i = 0; i < t_transfer->buffer_length; i += 2) {
                 tuple = g_data.getData();
@@ -46,7 +44,6 @@ int transfer_callback(hackrf_transfer *t_transfer) {
 
 void flush_callback(void *, int) {
         std::lock_guard<std::mutex> lk(g_mutex);
-        ready = true;
         g_cv.notify_all();
 }
 
@@ -198,7 +195,7 @@ int main() {
                 return EXIT_FAILURE;
         }
 
-        result = hackrf_enable_tx_flush(device, flush_callback, NULL);
+        result = hackrf_enable_tx_flush(device, flush_callback, nullptr);
         if (result) {
                 std::cerr << "hackrf_enable_tx_flush() failed: "
                           << hackrf_error_name(static_cast<hackrf_error>(result));
@@ -208,7 +205,7 @@ int main() {
         }
         std::thread th1(&RBUData::startCycle, &g_data);
 
-        result = hackrf_start_tx(device, transfer_callback, NULL);
+        result = hackrf_start_tx(device, transfer_callback, nullptr);
         if (result) {
                 std::cerr << "hackrf_start_tx() failed: "
                           << hackrf_error_name(static_cast<hackrf_error>(result));

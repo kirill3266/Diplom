@@ -24,8 +24,6 @@ class RBUData {
     int m_sample_rate; // Transmitter sample_rate
     int m_amplitude; // Transmitted signal amplitude
     double m_modulation_index; // Phase modulation index
-    double m_frequency_1; // Lower frequency (eg. 100 Hz)
-    double m_frequency_2; // Higher frequency (eg. 312.5 Hz)
     std::vector<double> m_subvector_1; // Lower frequency samples vector
     std::vector<double> m_subvector_2; // Higher frequency samples vector
     int m_data[60][2] = {0}; // RBU time code data
@@ -34,7 +32,7 @@ class RBUData {
     [[nodiscard]] std::vector<double> makeTime() const;
 
     // Function making PM samples at given frequency
-    std::vector<double> makePMSamples(const int t_frequency);
+    std::vector<double> makePMSamples(int t_frequency);
 
     // Function to update m_DUT1 from network
     // Can be time-consuming (from 300ms up to some seconds)
@@ -54,15 +52,15 @@ public:
 
     RBUData() = delete;
 
-    RBUData(const int t_sample_rate, const int t_amplitude, const double t_modulation_index,
-            const int t_frequency_1,
-            const int t_frequency_2);
+    RBUData(int t_sample_rate, int t_amplitude, double t_modulation_index,
+            int t_frequency_1,
+            int t_frequency_2);
 
     // Function for getting html content with http request
     static std::string getHttpContent(const std::string &t_url);
 
     // Function for factoring decimal to components from vector
-    static std::vector<int> decimalFactoring(const int t_value, std::vector<int> &&t_vector);
+    static std::vector<int> decimalFactoring(int t_value, std::vector<int> &&t_vector);
 
     // Return I/Q components according to RBU specification
     std::tuple<int, int> getData();
