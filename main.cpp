@@ -19,7 +19,7 @@
 #define M_IDX 0.698
 
 int g_xfered_samples = 0;
-int g_samples_to_xfer = 5 * SAMPLE_RATE; // 5 секунд передачи
+int g_samples_to_xfer = 10 * SAMPLE_RATE; // 5 секунд передачи
 
 RBUData g_data(SAMPLE_RATE, AMPLITUDE, M_IDX, SUBFREQUENCY_1, SUBFREQUENCY_2);
 
