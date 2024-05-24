@@ -11,6 +11,7 @@
 #include <chrono>
 #include <regex>
 #include <atomic>
+#include <complex>
 
 class RBUData {
 
@@ -22,17 +23,19 @@ class RBUData {
 
     int m_get_index = 0; // Number of got packets
     int m_sample_rate; // Transmitter sample_rate
-    int m_amplitude; // Transmitted signal amplitude
+    int m_amplitude = 127; // Signal amplitude
     double m_modulation_index; // Phase modulation index
-    std::vector<double> m_subvector_1; // Lower frequency samples vector
-    std::vector<double> m_subvector_2; // Higher frequency samples vector
+    int m_frequency_1; // Lower frequency
+    int m_frequency_2; // Higher frequency
+    std::vector<std::complex<int>> m_subvector_1; // Lower frequency samples vector
+    std::vector<std::complex<int>> m_subvector_2; // Higher frequency samples vector
     int m_data[60][2] = {0}; // RBU time code data
 
     // Function making 80ms time samples
     [[nodiscard]] std::vector<double> makeTime() const;
 
     // Function making PM samples at given frequency
-    std::vector<double> makePMSamples(int t_frequency);
+    std::vector<double> makePhaseSamples(int t_frequency);
 
     // Function to update m_DUT1 from network
     // Can be time-consuming (from 300ms up to some seconds)
@@ -52,9 +55,11 @@ public:
 
     RBUData() = delete;
 
-    RBUData(int t_sample_rate, int t_amplitude, double t_modulation_index,
+    RBUData(int t_sample_rate, double t_modulation_index,
             int t_frequency_1,
             int t_frequency_2);
+
+    void setup();
 
     // Function for getting html content with http request
     static std::string getHttpContent(const std::string &t_url);

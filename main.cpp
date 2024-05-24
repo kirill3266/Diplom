@@ -6,10 +6,10 @@
 #include <thread>
 #include <chrono>
 #include <libhackrf/hackrf.h>
+#include <fstream>
 
 #define DEFAULT_DEVICE 0
 #define FREQUENCY 433932500
-#define AMPLITUDE 10
 #define SUBFREQUENCY_1 100000
 #define SUBFREQUENCY_2 312500
 #define SAMPLE_RATE 10000000
@@ -19,9 +19,9 @@
 #define M_IDX 0.698
 
 int g_xfered_samples = 0;
-int g_samples_to_xfer = 10 * SAMPLE_RATE; // 5 секунд передачи
+int g_samples_to_xfer = 10 * SAMPLE_RATE; // 5 секунд передачи (1 сэмпл в секунду(2 квадратуры)
 
-RBUData g_data(SAMPLE_RATE, AMPLITUDE, M_IDX, SUBFREQUENCY_1, SUBFREQUENCY_2);
+RBUData g_data(SAMPLE_RATE, M_IDX, SUBFREQUENCY_1, SUBFREQUENCY_2);
 
 std::condition_variable g_cv;
 std::mutex g_mutex;
@@ -48,19 +48,22 @@ void flush_callback(void *, int) {
 }
 
 int main() {
+//        std::ofstream out("out.txt");
 //        std::thread tr1(&RBUData::startCycle, &g_data);
+//        g_data.setup();
 //        std::tuple<int, int> data;
-//        std::chrono::microseconds time = std::chrono::microseconds(0);
+//        std::chrono::time_point<std::chrono::steady_clock> tp1, tp2;
 //        for (int i = 0; i < SAMPLE_RATE * 2; ++i) {
-//                std::chrono::time_point<std::chrono::high_resolution_clock> tp1 = std::chrono::high_resolution_clock::now();
+//                tp1 = std::chrono::steady_clock::now();
 //                data = g_data.getData();
-//                std::chrono::time_point<std::chrono::high_resolution_clock> tp2 = std::chrono::high_resolution_clock::now();
-//                time = std::max(std::chrono::duration_cast<std::chrono::microseconds>(tp2 - tp1),time);
-////                std::cout << static_cast<int>(std::get<0>(data)) <<  " " << static_cast<int>(std::get<1>(data)) << std::endl;
+//                tp2 = std::chrono::steady_clock::now();
+//                out << "[" << i << "] " << std::get<0>(data) << " "
+//                    << std::get<1>(data) << " " << std::chrono::duration_cast<std::chrono::nanoseconds>(tp2 - tp1)
+//                    << std::endl;
 //        }
 //        g_data.setCycleStop();
 //        tr1.join();
-//        std::cout << "Max elapsed time: " << time << std::endl;
+//        out.close();
 
         int result;
         result = hackrf_init();
@@ -204,6 +207,7 @@ int main() {
                 return EXIT_FAILURE;
         }
         std::thread th1(&RBUData::startCycle, &g_data);
+        g_data.setup();
         std::chrono::time_point<std::chrono::high_resolution_clock> tp = std::chrono::high_resolution_clock::now();
         while ((std::chrono::duration_cast<std::chrono::microseconds>(tp.time_since_epoch()) % 60000000) !=
                // Waiting for minute start(microseconds accuracy)

@@ -21,12 +21,25 @@
 #include <mutex>
 #include <numeric>
 
-RBUData::RBUData(const int t_sample_rate, const int t_amplitude, const double t_modulation_index,
+RBUData::RBUData(const int t_sample_rate, const double t_modulation_index,
                  const int t_frequency_1,
-                 const int t_frequency_2) : m_sample_rate(t_sample_rate), m_amplitude(t_amplitude),
+                 const int t_frequency_2) : m_sample_rate(t_sample_rate), m_frequency_1(t_frequency_1),
+                                            m_frequency_2(t_frequency_2),
                                             m_modulation_index(t_modulation_index) {
-        m_subvector_1 = makePMSamples(t_frequency_1);
-        m_subvector_2 = makePMSamples(t_frequency_2);
+}
+
+void RBUData::setup() {
+        std::vector<double> tmp = makePhaseSamples(m_frequency_1);
+        m_subvector_1.resize(tmp.size());
+        for (int i = 0; i < tmp.size(); ++i) {
+                m_subvector_1[i] = static_cast<int>(m_amplitude * std::sin(m_modulation_index * tmp[i]));
+        }
+        tmp = makePhaseSamples(m_frequency_2);
+        m_subvector_2.resize(tmp.size());
+        for (int i = 0; i < tmp.size(); ++i) {
+                m_subvector_2[i] = static_cast<int>(m_amplitude * std::cos(m_modulation_index * tmp[i]));
+        }
+        generateData();
 }
 
 std::vector<double> RBUData::makeTime() const {
@@ -36,11 +49,11 @@ std::vector<double> RBUData::makeTime() const {
         return tmp;
 }
 
-std::vector<double> RBUData::makePMSamples(const int t_frequency) {
+std::vector<double> RBUData::makePhaseSamples(const int t_frequency) {
         std::vector<double> t = makeTime();
         std::vector<double> tmp(t.size());
         for (int i = 0; i < t.size(); ++i)
-                tmp[i] = std::cos(2 * M_PI * t_frequency * t[i]);
+                tmp[i] = m_modulation_index * std::cos(2 * std::numbers::pi * t_frequency * t[i]);
         return tmp;
 }
 
@@ -214,7 +227,6 @@ void RBUData::generateData() {
                          m_data[59][0]) % 2;
 }
 
-
 std::tuple<int, int> RBUData::getData() {
         if (m_get_index == m_sample_rate * 60 ||
             m_get_index == 0) { // Reset get index and regenerate data before new minute start
@@ -230,88 +242,47 @@ std::tuple<int, int> RBUData::getData() {
         int s = m_get_index / m_sample_rate; // s in packets
         m_get_index++;
         if (ms_mod_100 < 10) { // 10ms interval
-                return std::tuple<int, int>{0, m_amplitude};
+                return std::tuple<int, int>{127, -127}; // Transmit continious wave
         } else if (ms_mod_100 < 90) { // 80 ms interval
                 switch (ms_div_100) { // 100ms in packets
                         case 0:
                                 switch (m_data[s][0]) {
                                         case 0:
-                                                return std::tuple<int, int>{static_cast<int>(std::floor(
-                                                        m_amplitude * std::cos(m_modulation_index *
-                                                                               m_subvector_1[subvector_idx++]))),
-                                                                            static_cast<int>(std::floor(
-                                                                                    m_amplitude * std::sin(
-                                                                                            m_modulation_index *
-                                                                                            m_subvector_1[subvector_idx++])))};
+                                                return std::tuple<int, int>{m_subvector_1[subvector_idx].real(),
+                                                                            m_subvector_1[subvector_idx++].imag()};
                                         case 1:
-                                                return std::tuple<int, int>{static_cast<int>(std::floor(
-                                                        m_amplitude * std::cos(m_modulation_index *
-                                                                               m_subvector_1[subvector_idx++]))),
-                                                                            static_cast<int>(std::floor(
-                                                                                    m_amplitude * std::sin(
-                                                                                            m_modulation_index *
-                                                                                            m_subvector_2[subvector_idx++])))};
-
+                                                return std::tuple<int, int>{m_subvector_2[subvector_idx].real(),
+                                                                            m_subvector_2[subvector_idx++].imag()};
                                 }
                         case 1:
                                 switch (m_data[s][1]) {
                                         case 0:
-                                                return std::tuple<int, int>{static_cast<int>(std::floor(
-                                                        m_amplitude * std::cos(m_modulation_index *
-                                                                               m_subvector_1[subvector_idx++]))),
-                                                                            static_cast<int>(std::floor(
-                                                                                    m_amplitude * std::sin(
-                                                                                            m_modulation_index *
-                                                                                            m_subvector_1[subvector_idx++])))};
+                                                return std::tuple<int, int>{m_subvector_1[subvector_idx].real(),
+                                                                            m_subvector_1[subvector_idx++].imag()};
                                         case 1:
-                                                return std::tuple<int, int>{static_cast<int>(std::floor(
-                                                        m_amplitude * std::cos(m_modulation_index *
-                                                                               m_subvector_1[subvector_idx++]))),
-                                                                            static_cast<int>(std::floor(
-                                                                                    m_amplitude * std::sin(
-                                                                                            m_modulation_index *
-                                                                                            m_subvector_2[subvector_idx++])))};
+                                                return std::tuple<int, int>{m_subvector_2[subvector_idx].real(),
+                                                                            m_subvector_2[subvector_idx++].imag()};
                                 }
                         case 2:
                         case 3:
                         case 4:
                         case 5:
                         case 6:
-                                return std::tuple<int, int>{static_cast<int>(std::floor(
-                                        m_amplitude * std::cos(m_modulation_index *
-                                                               m_subvector_1[subvector_idx++]))),
-                                                            static_cast<int>(std::floor(
-                                                                    m_amplitude * std::sin(
-                                                                            m_modulation_index *
-                                                                            m_subvector_1[subvector_idx++])))};
+                                return std::tuple<int, int>{m_subvector_1[subvector_idx].real(),
+                                                            m_subvector_1[subvector_idx++].imag()};
                         case 7:
                         case 8:
                                 if (s == 59)
-                                        return std::tuple<int, int>{static_cast<int>(std::floor(
-                                                m_amplitude * std::cos(m_modulation_index *
-                                                                       m_subvector_2[subvector_idx++]))),
-                                                                    static_cast<int>(std::floor(
-                                                                            m_amplitude * std::sin(
-                                                                                    m_modulation_index *
-                                                                                    m_subvector_1[subvector_idx++])))};
-                                return std::tuple<int, int>{static_cast<int>(std::floor(
-                                        m_amplitude * std::cos(m_modulation_index *
-                                                               m_subvector_1[subvector_idx++]))),
-                                                            static_cast<int>(std::floor(
-                                                                    m_amplitude * std::sin(
-                                                                            m_modulation_index *
-                                                                            m_subvector_1[subvector_idx++])))};
+                                        return std::tuple<int, int>{m_subvector_2[subvector_idx].real(),
+                                                                    m_subvector_2[subvector_idx++].imag()};
+                                return std::tuple<int, int>{m_subvector_1[subvector_idx].real(),
+                                                            m_subvector_1[subvector_idx++].imag()};
                         case 9:
-                                return std::tuple<int, int>{static_cast<int>(std::floor(
-                                        m_amplitude * std::cos(m_modulation_index *
-                                                               m_subvector_1[subvector_idx++]))),
-                                                            static_cast<int>(std::floor(
-                                                                    m_amplitude * std::sin(
-                                                                            m_modulation_index *
-                                                                            m_subvector_2[subvector_idx++])))};
+                                return std::tuple<int, int>{m_subvector_2[subvector_idx].real(),
+                                                            m_subvector_2[subvector_idx++].imag()};
                 }
         } else if (ms_mod_100 < 95) { // first 5 ms interval
-                return std::tuple<int, int>{0, m_amplitude};
+                return std::tuple<int, int>{127, -127};
         } else if (ms_mod_100 < 100) { // Second 5 ms interval
                 return std::tuple<int, int>{0, 0};
         }
