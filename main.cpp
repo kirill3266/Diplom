@@ -209,7 +209,6 @@ int main() {
         std::thread th1(&RBUData::startCycle, &g_data);
         g_data.setup();
         std::chrono::time_point<std::chrono::high_resolution_clock> tp = std::chrono::high_resolution_clock::now();
-        // TODO refactor to start of the secronds
         while ((std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch())) % 60 !=
                std::chrono::seconds(0) &&
                (std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch())) % 1000 !=
