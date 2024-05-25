@@ -25,8 +25,8 @@ class RBUData {
     int m_sample_rate; // Transmitter sample_rate
     int m_amplitude = 127; // Signal amplitude
     double m_modulation_index; // Phase modulation index
-    int m_frequency_1; // Lower frequency
-    int m_frequency_2; // Higher frequency
+    double m_frequency_1; // Lower frequency
+    double m_frequency_2; // Higher frequency
     std::vector<std::complex<int>> m_subvector_1; // Lower frequency samples vector
     std::vector<std::complex<int>> m_subvector_2; // Higher frequency samples vector
     int m_data[60][2] = {0}; // RBU time code data
@@ -35,7 +35,7 @@ class RBUData {
     [[nodiscard]] std::vector<double> makeTime() const;
 
     // Function making PM samples at given frequency
-    std::vector<double> makePhaseSamples(int t_frequency);
+    std::vector<double> makePhaseSamples(double t_frequency);
 
     // Function to update m_DUT1 from network
     // Can be time-consuming (from 300ms up to some seconds)
@@ -56,8 +56,8 @@ public:
     RBUData() = delete;
 
     RBUData(int t_sample_rate, double t_modulation_index,
-            int t_frequency_1,
-            int t_frequency_2);
+            double t_frequency_1,
+            double t_frequency_2);
 
     void setup();
 

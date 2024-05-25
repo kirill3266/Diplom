@@ -22,8 +22,8 @@
 #include <numeric>
 
 RBUData::RBUData(const int t_sample_rate, const double t_modulation_index,
-                 const int t_frequency_1,
-                 const int t_frequency_2) : m_sample_rate(t_sample_rate), m_frequency_1(t_frequency_1),
+                 const double t_frequency_1,
+                 const double t_frequency_2) : m_sample_rate(t_sample_rate), m_frequency_1(t_frequency_1),
                                             m_frequency_2(t_frequency_2),
                                             m_modulation_index(t_modulation_index) {
 }
@@ -32,12 +32,14 @@ void RBUData::setup() {
         std::vector<double> tmp = makePhaseSamples(m_frequency_1);
         m_subvector_1.resize(tmp.size());
         for (int i = 0; i < tmp.size(); ++i) {
-                m_subvector_1[i] = static_cast<int>(m_amplitude * std::sin(m_modulation_index * tmp[i]));
+                m_subvector_1[i].real(static_cast<int>(m_amplitude * std::sin(m_modulation_index * tmp[i])));
+                m_subvector_1[i].imag(static_cast<int>(-m_amplitude * std::cos(m_modulation_index * tmp[i])));
         }
         tmp = makePhaseSamples(m_frequency_2);
         m_subvector_2.resize(tmp.size());
         for (int i = 0; i < tmp.size(); ++i) {
-                m_subvector_2[i] = static_cast<int>(m_amplitude * std::cos(m_modulation_index * tmp[i]));
+                m_subvector_2[i].real(static_cast<int>(m_amplitude * std::sin(m_modulation_index * tmp[i])));
+                m_subvector_2[i].imag(static_cast<int>(-m_amplitude * std::cos(m_modulation_index * tmp[i])));
         }
         generateData();
 }
@@ -49,11 +51,11 @@ std::vector<double> RBUData::makeTime() const {
         return tmp;
 }
 
-std::vector<double> RBUData::makePhaseSamples(const int t_frequency) {
+std::vector<double> RBUData::makePhaseSamples(const double t_frequency) {
         std::vector<double> t = makeTime();
         std::vector<double> tmp(t.size());
         for (int i = 0; i < t.size(); ++i)
-                tmp[i] = m_modulation_index * std::cos(2 * std::numbers::pi * t_frequency * t[i]);
+                tmp[i] = std::sin(2 * std::numbers::pi * t_frequency * t[i]);
         return tmp;
 }
 
@@ -242,7 +244,7 @@ std::tuple<int, int> RBUData::getData() {
         int s = m_get_index / m_sample_rate; // s in packets
         m_get_index++;
         if (ms_mod_100 < 10) { // 10ms interval
-                return std::tuple<int, int>{127, -127}; // Transmit continious wave
+                return std::tuple<int, int>{0, -127}; // Transmit continious wave
         } else if (ms_mod_100 < 90) { // 80 ms interval
                 switch (ms_div_100) { // 100ms in packets
                         case 0:
@@ -282,7 +284,7 @@ std::tuple<int, int> RBUData::getData() {
                                                             m_subvector_2[subvector_idx++].imag()};
                 }
         } else if (ms_mod_100 < 95) { // first 5 ms interval
-                return std::tuple<int, int>{127, -127};
+                return std::tuple<int, int>{0, -127};
         } else if (ms_mod_100 < 100) { // Second 5 ms interval
                 return std::tuple<int, int>{0, 0};
         }

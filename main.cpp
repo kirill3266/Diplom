@@ -10,11 +10,11 @@
 
 #define DEFAULT_DEVICE 0
 #define FREQUENCY 433932500
-#define SUBFREQUENCY_1 100000
-#define SUBFREQUENCY_2 312500
+#define SUBFREQUENCY_1 100
+#define SUBFREQUENCY_2 312.5
 #define SAMPLE_RATE 10000000
-#define AMP_ENABLE 0
-#define UNDERRUN_LIMIT 10000
+#define AMP_ENABLE 1
+#define UNDERRUN_LIMIT 5000
 #define VGA_GAIN 20
 #define M_IDX 0.698
 
@@ -36,9 +36,9 @@ int transfer_callback(hackrf_transfer *t_transfer) {
         }
         t_transfer->valid_length = t_transfer->buffer_length;
         g_xfered_samples += t_transfer->buffer_length;
-        if (g_xfered_samples >= g_samples_to_xfer) {
-                return 1;
-        }
+//        if (g_xfered_samples >= g_samples_to_xfer) {
+//                return 1;
+//        }
         return 0;
 }
 
