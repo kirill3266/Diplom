@@ -210,11 +210,16 @@ int main() {
         g_data.setup();
         std::chrono::time_point<std::chrono::high_resolution_clock> tp = std::chrono::high_resolution_clock::now();
         while ((std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch())) % 60 !=
-               std::chrono::seconds(0) &&
+                       std::chrono::seconds(0) ||
                (std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch())) % 1000 !=
                std::chrono::milliseconds(0)) {
                 tp = std::chrono::high_resolution_clock::now();
-//                std::cout << std::dec <<(std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch()))%60 << " " << (std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()))%1000 << " " << (std::chrono::duration_cast<std::chrono::microseconds>(tp.time_since_epoch()))%1000000 << std::endl; // Текущая секунда, милли и микросекунда
+                std::cout << std::dec << (std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch())) % 60
+                          << " "
+                          << (std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch())) % 1000
+                          << " "
+                          << (std::chrono::duration_cast<std::chrono::microseconds>(tp.time_since_epoch())) % 1000000
+                          << std::endl; // Текущая секунда, милли и микросекунда
                 std::this_thread::sleep_for(std::chrono::nanoseconds(50));
         }
         result = hackrf_start_tx(device, transfer_callback, nullptr);
