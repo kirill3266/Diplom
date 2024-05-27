@@ -9,13 +9,13 @@
 #include <fstream>
 
 #define DEFAULT_DEVICE 0
-#define FREQUENCY 433932500
+#define FREQUENCY 433500000
 #define SUBFREQUENCY_1 100
 #define SUBFREQUENCY_2 312.5
 #define SAMPLE_RATE 10000000
 #define AMP_ENABLE 1
 #define UNDERRUN_LIMIT 5000
-#define VGA_GAIN 20
+#define VGA_GAIN 10
 #define M_IDX 0.698
 
 int g_xfered_samples = 0;
@@ -214,12 +214,12 @@ int main() {
                (std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch())) % 1000 !=
                std::chrono::milliseconds(0)) {
                 tp = std::chrono::high_resolution_clock::now();
-                std::cout << std::dec << (std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch())) % 60
-                          << " "
-                          << (std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch())) % 1000
-                          << " "
-                          << (std::chrono::duration_cast<std::chrono::microseconds>(tp.time_since_epoch())) % 1000000
-                          << std::endl; // Текущая секунда, милли и микросекунда
+//                std::cout << std::dec << (std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch())) % 60
+//                          << " "
+//                          << (std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch())) % 1000
+//                          << " "
+//                          << (std::chrono::duration_cast<std::chrono::microseconds>(tp.time_since_epoch())) % 1000000
+//                          << std::endl; // Текущая секунда, милли и микросекунда
                 std::this_thread::sleep_for(std::chrono::nanoseconds(50));
         }
         result = hackrf_start_tx(device, transfer_callback, nullptr);
@@ -243,7 +243,8 @@ int main() {
         }
         g_data.setCycleStop();
         th1.join();
-        std::cout << "Elapsed time: " << std::dec << std::chrono::duration_cast<std::chrono::milliseconds>(tp1 - tp)
+        std::cout << "Elapsed time: " << std::dec
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(tp1 - tp).count()
                   << std::endl;
 
         std::cout << "Transferred " << g_xfered_samples << " bytes" << std::endl;

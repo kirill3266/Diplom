@@ -20,6 +20,7 @@
 #include <cmath>
 #include <mutex>
 #include <numeric>
+#include <numbers>
 
 RBUData::RBUData(const int t_sample_rate, const double t_modulation_index,
                  const double t_frequency_1,
