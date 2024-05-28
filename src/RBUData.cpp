@@ -236,7 +236,7 @@ std::tuple<int, int> RBUData::getData() {
                 generateData();
                 m_get_index = 0;
         }
-        static int subvector_idx = 0;
+        static int subvector_idx = 0, return_idx;
         if (subvector_idx == m_sample_rate / 1000 * 80)
                 subvector_idx = 0;
         int ms = (m_get_index % m_sample_rate) / (m_sample_rate / 1000); // ms in packets
@@ -244,6 +244,8 @@ std::tuple<int, int> RBUData::getData() {
         int ms_div_100 = ms / 100; // RBU second interval
         int s = m_get_index / m_sample_rate; // s in packets
         m_get_index++;
+        return_idx = subvector_idx;
+        subvector_idx++;
         if (ms_mod_100 < 10) { // 10ms interval
                 return std::tuple<int, int>{0, -127}; // Transmit continious wave
         } else if (ms_mod_100 < 90) { // 80 ms interval
@@ -251,38 +253,38 @@ std::tuple<int, int> RBUData::getData() {
                         case 0:
                                 switch (m_data[s][0]) {
                                         case 0:
-                                                return std::tuple<int, int>{m_subvector_1[subvector_idx].real(),
-                                                                            m_subvector_1[subvector_idx++].imag()};
+                                                return std::tuple<int, int>{m_subvector_1[return_idx].real(),
+                                                                            m_subvector_1[return_idx].imag()};
                                         case 1:
-                                                return std::tuple<int, int>{m_subvector_2[subvector_idx].real(),
-                                                                            m_subvector_2[subvector_idx++].imag()};
+                                                return std::tuple<int, int>{m_subvector_2[return_idx].real(),
+                                                                            m_subvector_2[return_idx].imag()};
                                 }
                         case 1:
                                 switch (m_data[s][1]) {
                                         case 0:
-                                                return std::tuple<int, int>{m_subvector_1[subvector_idx].real(),
-                                                                            m_subvector_1[subvector_idx++].imag()};
+                                                return std::tuple<int, int>{m_subvector_1[return_idx].real(),
+                                                                            m_subvector_1[return_idx].imag()};
                                         case 1:
-                                                return std::tuple<int, int>{m_subvector_2[subvector_idx].real(),
-                                                                            m_subvector_2[subvector_idx++].imag()};
+                                                return std::tuple<int, int>{m_subvector_2[return_idx].real(),
+                                                                            m_subvector_2[return_idx].imag()};
                                 }
                         case 2:
                         case 3:
                         case 4:
                         case 5:
                         case 6:
-                                return std::tuple<int, int>{m_subvector_1[subvector_idx].real(),
-                                                            m_subvector_1[subvector_idx++].imag()};
+                                return std::tuple<int, int>{m_subvector_1[return_idx].real(),
+                                                            m_subvector_1[return_idx].imag()};
                         case 7:
                         case 8:
                                 if (s == 59)
-                                        return std::tuple<int, int>{m_subvector_2[subvector_idx].real(),
-                                                                    m_subvector_2[subvector_idx++].imag()};
-                                return std::tuple<int, int>{m_subvector_1[subvector_idx].real(),
-                                                            m_subvector_1[subvector_idx++].imag()};
+                                        return std::tuple<int, int>{m_subvector_2[return_idx].real(),
+                                                                    m_subvector_2[return_idx].imag()};
+                                return std::tuple<int, int>{m_subvector_1[return_idx].real(),
+                                                            m_subvector_1[return_idx].imag()};
                         case 9:
-                                return std::tuple<int, int>{m_subvector_2[subvector_idx].real(),
-                                                            m_subvector_2[subvector_idx++].imag()};
+                                return std::tuple<int, int>{m_subvector_2[return_idx].real(),
+                                                            m_subvector_2[return_idx].imag()};
 
                         default:
                                 return std::tuple<int, int>{0, 0};
