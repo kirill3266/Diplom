@@ -29,7 +29,7 @@ class RBUData {
     double m_frequency_2; // Higher frequency
     std::vector<std::complex<int>> m_subvector_1; // Lower frequency samples vector
     std::vector<std::complex<int>> m_subvector_2; // Higher frequency samples vector
-    int m_data[60][2] = {0}; // RBU time code data
+    int m_data[60][2] = {{}}; // RBU time code data
 
     // Function making 80ms time samples
     [[nodiscard]] std::vector<double> makeTime() const;

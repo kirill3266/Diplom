@@ -24,21 +24,21 @@
 
 RBUData::RBUData(const int t_sample_rate, const double t_modulation_index,
                  const double t_frequency_1,
-                 const double t_frequency_2) : m_sample_rate(t_sample_rate), m_frequency_1(t_frequency_1),
-                                            m_frequency_2(t_frequency_2),
-                                            m_modulation_index(t_modulation_index) {
+                 const double t_frequency_2) : m_sample_rate(t_sample_rate), m_modulation_index(t_modulation_index),
+                                               m_frequency_1(t_frequency_1),
+                                               m_frequency_2(t_frequency_2) {
 }
 
 void RBUData::setup() {
         std::vector<double> tmp = makePhaseSamples(m_frequency_1);
         m_subvector_1.resize(tmp.size());
-        for (int i = 0; i < tmp.size(); ++i) {
+        for (std::size_t i = 0; i < tmp.size(); ++i) {
                 m_subvector_1[i].real(static_cast<int>(m_amplitude * std::sin(m_modulation_index * tmp[i])));
                 m_subvector_1[i].imag(static_cast<int>(-m_amplitude * std::cos(m_modulation_index * tmp[i])));
         }
         tmp = makePhaseSamples(m_frequency_2);
         m_subvector_2.resize(tmp.size());
-        for (int i = 0; i < tmp.size(); ++i) {
+        for (std::size_t i = 0; i < tmp.size(); ++i) {
                 m_subvector_2[i].real(static_cast<int>(m_amplitude * std::sin(m_modulation_index * tmp[i])));
                 m_subvector_2[i].imag(static_cast<int>(-m_amplitude * std::cos(m_modulation_index * tmp[i])));
         }
@@ -55,7 +55,7 @@ std::vector<double> RBUData::makeTime() const {
 std::vector<double> RBUData::makePhaseSamples(const double t_frequency) {
         std::vector<double> t = makeTime();
         std::vector<double> tmp(t.size());
-        for (int i = 0; i < t.size(); ++i)
+        for (std::size_t i = 0; i < t.size(); ++i)
                 tmp[i] = std::sin(2 * std::numbers::pi * t_frequency * t[i]);
         return tmp;
 }
@@ -283,12 +283,16 @@ std::tuple<int, int> RBUData::getData() {
                         case 9:
                                 return std::tuple<int, int>{m_subvector_2[subvector_idx].real(),
                                                             m_subvector_2[subvector_idx++].imag()};
+
+                        default:
+                                return std::tuple<int, int>{0, 0};
                 }
         } else if (ms_mod_100 < 95) { // first 5 ms interval
                 return std::tuple<int, int>{0, -127};
         } else if (ms_mod_100 < 100) { // Second 5 ms interval
                 return std::tuple<int, int>{0, 0};
         }
+        return std::tuple<int, int>{0, 0};
 }
 
 void RBUData::startCycle() {
