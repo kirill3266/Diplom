@@ -303,7 +303,7 @@ void RBUData::startCycle() {
         Poco::Net::initializeSSL();
         while (!m_stop) {
                 updateDUT();
-                std::this_thread::sleep_for(std::chrono::seconds(5));
+                std::this_thread::sleep_for(std::chrono::hours(24));
         }
 }
 
