@@ -34,13 +34,13 @@ void RBUData::setup() {
         m_subvector_1.resize(tmp.size());
         for (std::size_t i = 0; i < tmp.size(); ++i) {
                 m_subvector_1[i].real(static_cast<int>(m_amplitude * std::sin(m_modulation_index * tmp[i])));
-                m_subvector_1[i].imag(static_cast<int>(-m_amplitude * std::cos(m_modulation_index * tmp[i])));
+                m_subvector_1[i].imag(static_cast<int>(m_amplitude * std::cos(m_modulation_index * tmp[i])));
         }
         tmp = makePhaseSamples(m_frequency_2);
         m_subvector_2.resize(tmp.size());
         for (std::size_t i = 0; i < tmp.size(); ++i) {
                 m_subvector_2[i].real(static_cast<int>(m_amplitude * std::sin(m_modulation_index * tmp[i])));
-                m_subvector_2[i].imag(static_cast<int>(-m_amplitude * std::cos(m_modulation_index * tmp[i])));
+                m_subvector_2[i].imag(static_cast<int>(m_amplitude * std::cos(m_modulation_index * tmp[i])));
         }
         generateData();
 }
